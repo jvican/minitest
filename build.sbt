@@ -28,7 +28,7 @@ addCommandAlias("release", ";+publishSigned ;sonatypeReleaseAll")
 
 lazy val baseSettings = Seq(
   organization := "io.monix",
-  scalaVersion := "2.12.4",
+  scalaVersion := "0.5.0-bin-SNAPSHOT",
   crossScalaVersions := Seq("2.10.6", "2.11.11", "2.12.4"),
 
   // -- Settings meant for deployment on oss.sonatype.org
@@ -174,7 +174,7 @@ lazy val requiredMacroCompatDeps = Seq(
   ))
 
 lazy val minitest = project.in(file("."))
-  .aggregate(minitestJVM, minitestJS, lawsJVM, lawsJS)
+  .aggregate(minitestJVM, lawsJVM)
   .settings(baseSettings)
   .settings(
     publishArtifact := false,
@@ -186,41 +186,22 @@ lazy val minitest = project.in(file("."))
 lazy val minitestJVM = project.in(file("jvm"))
   .settings(sharedSettings)
   .settings(crossVersionSharedSources)
-  .settings(requiredMacroCompatDeps)
   .settings(
     name := "minitest",
     libraryDependencies ++= Seq(
       "org.scala-sbt" % "test-interface" % "1.0",
-      "org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided"
+      ("org.scala-js" %% "scalajs-stubs" % scalaJSVersion % "provided").withDottyCompat(scalaVersion.value)
     ))
-
-lazy val minitestJS = project.in(file("js"))
-  .enablePlugins(ScalaJSPlugin)
-  .settings(sharedSettings)
-  .settings(crossVersionSharedSources)
-  .settings(scalaJSSettings)
-  .settings(requiredMacroCompatDeps)
-  .settings(
-    name := "minitest",
-    libraryDependencies += "org.scala-js" %% "scalajs-test-interface" % scalaJSVersion
-  )
 
 lazy val lawsSettings = Seq(
   name := "minitest-laws",
   libraryDependencies ++= Seq(
-    "org.scalacheck" %%% "scalacheck" % "1.13.5"
+    ("org.scalacheck" %%% "scalacheck" % "1.13.5").withDottyCompat(scalaVersion.value)
   ))
 
 lazy val lawsJVM = project.in(file("laws/jvm"))
   .dependsOn(minitestJVM)
   .settings(sharedSettings)
-  .settings(lawsSettings)
-
-lazy val lawsJS = project.in(file("laws/js"))
-  .enablePlugins(ScalaJSPlugin)
-  .dependsOn(minitestJS)
-  .settings(sharedSettings)
-  .settings(scalaJSSettings)
   .settings(lawsSettings)
 
 //------------- For Release
